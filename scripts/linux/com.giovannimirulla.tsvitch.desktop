@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=tsvitch
+Comment=TV finally on your Switch
+Exec=tsvitch
+Icon=com.giovannimirulla.tsvitch
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Video;

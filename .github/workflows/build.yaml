@@ -1,0 +1,209 @@
+name: Build tsvitch
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ssh_darwin:
+        description: 'SSH connection to Darwin'
+        required: false
+        default: 'false'
+      ssh_ubuntu:
+        description: 'SSH connection to Ubuntu'
+        required: false
+        default: 'false'
+      arm_flatpak:
+        description: 'build flatpak (aarch64)'
+        required: false
+        default: 'false'
+      universal_macos:
+        description: 'build macos (universal)'
+        required: false
+        default: 'false'
+      release:
+        description: 'Push a new release'
+        required: false
+        default: 'false'
+      version:
+        description: 'Version'
+        required: false
+        default: '0.0.0'
+      disable_unity_build:
+        description: 'Disable unity build'
+        required: false
+        default: 'false'
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.info.outputs.version }}
+      standard_version: ${{ steps.info.outputs.standard_version }}
+      DIST_NRO: ${{ steps.info.outputs.DIST_NRO }}
+      DIST_DMG_PREFIX: ${{ steps.info.outputs.DIST_DMG_PREFIX }}
+      DIST_INTEL_DMG: ${{ steps.info.outputs.DIST_INTEL_DMG }}
+      DIST_INTEL_OLD_DMG: ${{ steps.info.outputs.DIST_INTEL_OLD_DMG }}
+      DIST_ARM_DMG: ${{ steps.info.outputs.DIST_ARM_DMG }}
+      DIST_UNIVERSAL_DMG: ${{ steps.info.outputs.DIST_UNIVERSAL_DMG }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Debug version
+        run: |
+          export VERSION=`git rev-parse --short HEAD`
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Release version
+        if: github.event.inputs.release == 'true' && github.event.inputs.release != 'false' && !cancelled()
+        run: |
+          export VERSION="${{ github.event.inputs.version }}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Version
+        id: info
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "DIST_NRO=tsvitch-NintendoSwitch-${VERSION}" >> $GITHUB_OUTPUT
+          echo "DIST_DMG_PREFIX=tsvitch-macOS" >> $GITHUB_OUTPUT
+          echo "DIST_INTEL_DMG=tsvitch-macOS-IntelChip-${VERSION}" >> $GITHUB_OUTPUT
+          echo "DIST_INTEL_OLD_DMG=tsvitch-macOS-IntelChip_10.11-${VERSION}" >> $GITHUB_OUTPUT
+          echo "DIST_ARM_DMG=tsvitch-macOS-AppleSilicon-${VERSION}" >> $GITHUB_OUTPUT
+          echo "DIST_UNIVERSAL_DMG=tsvitch-macOS-Universal-${VERSION}" >> $GITHUB_OUTPUT
+          echo $VERSION
+          echo "${{  github.event.inputs.version }}"
+
+
+  release:
+    needs: [  build-switch, build-macos, version ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Upload Release
+        if: github.event.inputs.release == 'true' && !cancelled()
+        uses: ncipollo/release-action@v1
+        with:
+          name: tsvitch ${{  github.event.inputs.version }}
+          tag: ${{  github.event.inputs.version }}
+          omitBodyDuringUpdate: true
+          body: This release is built by github-action.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          artifacts: >
+            ${{ needs.version.outputs.DIST_NRO }}/${{ needs.version.outputs.DIST_NRO }}.tar.gz
+            ${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+
+  build-switch:
+    needs: [ version ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { driver: opengl }
+        driver: [opengl]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Disable unity build
+        if: ${{ github.event.inputs.disable_unity_build == 'true' }}
+        run: |
+          sed -i 's/BRLS_UNITY_BUILD=ON/BRLS_UNITY_BUILD=OFF/' scripts/build_switch${{ matrix.shuffix }}.sh
+
+      - name: Build Nro
+        run: |
+          docker run --platform linux/amd64 --rm -v $(pwd):/data devkitpro/devkita64:20240324 bash -c "/data/scripts/build_switch${{ matrix.shuffix }}.sh"
+    
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.version.outputs.DIST_NRO }}${{ matrix.shuffix }}
+          path: "cmake-build-switch/tsvitch.nro"
+
+  build-macos:
+    needs: [ version ]
+    runs-on: macos-14
+    strategy:
+      matrix:
+        include:
+          - { arch: IntelChip, name: IntelChip }
+          - { arch: IntelChip_Old, name: IntelChip_10.11 }
+          - { arch: AppleSilicon, name: AppleSilicon }
+          - { arch: Universal, name: Universal }
+      # Don't fail the whole workflow if one architecture fails
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: install deps
+        if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
+        run: |
+          brew install create-dmg dylibbundler
+          brew tap xfangfang/wiliwili
+          brew install -v mpv-wiliwili
+
+      - name: SSH connection to Actions
+        uses: P3TERX/ssh2actions@v1.0.0
+        if: (github.event.inputs.ssh_darwin == 'true' && github.event.inputs.ssh_darwin  != 'false') || contains(github.event.action, 'ssh_darwin')
+        env:
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+      - name: Update gamepad mappings
+        if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
+        id: gamepad
+        run: |
+          BRLS_GLFW="library/borealis/library/lib/extern/glfw"
+          cmake -P ${BRLS_GLFW}/CMake/GenerateMappings.cmake  ${BRLS_GLFW}/src/mappings.h.in  ${BRLS_GLFW}/src/mappings.h
+
+      - name: Build
+        if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
+        id: compile
+        run: |
+          cmake -B build \
+            -DPLATFORM_DESKTOP=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMAC_${{ matrix.arch }}=ON \
+            -DMAC_DOWNLOAD_DYLIB=ON \
+            -DBRLS_UNITY_BUILD=${{ github.event.inputs.disable_unity_build == 'true' && 'OFF' || 'ON' }} \
+            -DCMAKE_UNITY_BUILD_BATCH_SIZE=16
+          make -C build tsvitch.app -j$(sysctl -n hw.ncpu)
+
+      - name: Name
+        if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
+        id: name
+        run: |
+          echo "DMG=${{ needs.version.outputs.DIST_DMG_PREFIX }}-${{ matrix.name }}-${{ needs.version.outputs.version }}"  >> $GITHUB_OUTPUT
+
+      - name: Bundle
+        if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
+        id: bundle
+        run: |
+          mkdir -p dist
+          mv build/tsvitch.app dist/
+          cp ./scripts/mac/readme.txt dist/readme.txt
+          create-dmg --window-pos 200 120 --window-size 800 400 \
+            --icon-size 100 --icon "tsvitch.app" 200 190 \
+            --icon "readme.txt" 400 100 --hide-extension "tsvitch.app" \
+            --app-drop-link 600 185  --volicon ./scripts/mac/dmg.icns \
+            --volname "tsvitch (${{ needs.version.outputs.version }})" ${{ steps.name.outputs.DMG }}.dmg "dist/"
+
+      - name: Upload dist
+        if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.DMG }}
+          path: "${{ steps.name.outputs.DMG }}.dmg"

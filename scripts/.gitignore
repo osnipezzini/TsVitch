@@ -1,0 +1,9 @@
+pkg/
+src/
+switch-*
+libmpv-*
+!switch-forwarder
+switch-forwarder/tsvitch*
+!switch-forwarder/tsvitch.json
+*.nsp
+*.suprx

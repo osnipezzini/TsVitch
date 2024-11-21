@@ -1,0 +1,52 @@
+pkgname=ffmpeg
+pkgver=7900d3684acc8e5e98fd39cbb12cb7ab73e6d4a5
+pkgrel=2
+url="https://ffmpeg.org/"
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/fish47/FFmpeg-vita/archive/${pkgver}.tar.gz")
+sha256sums=('SKIP')
+depends=('mbedtls')
+
+prepare() {
+  cd FFmpeg-vita-$pkgver
+}
+
+build() {
+  cd FFmpeg-vita-$pkgver
+  ./configure --prefix=$VITASDK/arm-vita-eabi \
+        --enable-vita \
+        --target-os=vita \
+        --disable-shared \
+        --enable-static \
+        --disable-programs \
+        --disable-doc \
+        --disable-autodetect \
+        --enable-swscale \
+        --enable-swresample \
+        --disable-encoders \
+        --disable-muxers \
+        --disable-demuxers \
+        --enable-demuxer='hls,flac,flv,aac,h264,hevc,mp3,wav,mov,matroska' \
+        --disable-parsers \
+        --enable-parser='aac,aac_latm,bmp,flac,h264,hdr,hevc,mpeg4video,mpeg4audio,mpegvideo' \
+        --disable-decoders \
+        --enable-decoder='h264,aac,bmp,flv,flac,aac_vita,mp3_vita,h264_vita' \
+        --enable-network \
+        --disable-protocols \
+        --enable-protocol='file,http,tcp,tls,hls,https,rtp,crypto,httpproxy' \
+        --disable-iconv \
+        --disable-lzma \
+        --disable-sdl2 \
+        --disable-xlib \
+        --disable-avdevice \
+        --enable-mbedtls --enable-version3 \
+        --enable-pthreads
+
+  sed 's/#define HAVE_GETADDRINFO 1/#define HAVE_GETADDRINFO 0/g' -i config.h
+
+  make -j12
+}
+
+package () {
+  cd FFmpeg-vita-$pkgver
+  make DESTDIR=$pkgdir install
+}
