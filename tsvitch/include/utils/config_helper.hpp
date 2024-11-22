@@ -146,6 +146,7 @@ public:
     void setProgramConfig(const ProgramConfig& conf);
 
     std::string getClientID();
+    std::string getUserID();
 
     std::string getDeviceID();
 

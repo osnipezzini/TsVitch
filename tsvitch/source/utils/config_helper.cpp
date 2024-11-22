@@ -198,6 +198,11 @@ void ProgramConfig::setProgramConfig(const ProgramConfig& conf) {
     brls::Logger::info("setting: {}", conf.setting.dump());
 }
 
+std::string ProgramConfig::getUserID() {
+    return brls::Application::getPlatform()->getName();
+}
+
+
 std::string ProgramConfig::getClientID() {
     if (this->client.empty()) {
         this->client = fmt::format("{}.{}", tsvitch::getRandomNumber(), tsvitch::getUnixTime());

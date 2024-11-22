@@ -30,12 +30,10 @@ public:
     static inline cpr::Cookies COOKIES = {false};
     static inline cpr::Header HEADERS  = {
         {"User-Agent", "tsvitch"},
-        {"Referer", "https://www.tsvitch.com/client"},
-        {"Origin", "https://www.tsvitch.com"},
     };
     static inline int TIMEOUT = 10000;
-    static inline cpr::Proxies PROXIES;
-    static inline cpr::VerifySsl VERIFY;
+    static inline cpr::Proxies PROXIES = {};
+    static inline cpr::VerifySsl VERIFY = true;
 
     static cpr::Response get(const std::string& url, const cpr::Parameters& parameters = {}, int timeout = 10000);
 

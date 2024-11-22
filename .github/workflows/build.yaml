@@ -93,10 +93,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           artifacts: >
-            ${{ needs.version.outputs.DIST_NRO }}.tar.gz
-            ${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            ${{ github.workspace }}\${{ needs.version.outputs.DIST_NRO }}.tar.gz
+            ${{ github.workspace }}\${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            ${{ github.workspace }}\${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            ${{ github.workspace }}\${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
 
   build-switch:
     needs: [ version ]

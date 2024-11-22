@@ -87,7 +87,7 @@ docker run --rm -v $(pwd):/data devkitpro/devkita64:20240202 \
   bash -c "/data/scripts/build_switch.sh"
 ```
 
-#### 本地编译
+#### Compilation 
 
 ```shell
 # 1. Install the devkitpro environment: https://github.com/devkitPro/pacman/releases

@@ -41,17 +41,19 @@ void Analytics::send() {
     if (package.events.empty()) return;
 
     package.client_id        = this->client_id;
+    package.user_id          = "0";
     package.timestamp_micros = std::to_string(tsvitch::getUnixTime()) + "000000";
     package.insertUserProperties({
-        {"git", APPVersion::instance().git_tag},
+        {"git", APPVersion::instance().git_tag.empty() ? "v" + app_version : APPVersion::instance().git_tag},
         {"platform", APPVersion::instance().getPlatform()},
         {"device", APPVersion::instance().getPlatform()},
     });
     for (auto& i : package.events) {
         i.params["engagement_time_msec"] = 100;
         i.params["session_id"]           = this->client_id;
-        i.params["git"]                  = APPVersion::instance().git_tag;
+        i.params["git"]                  = APPVersion::instance().git_tag.empty() ? "v" + app_version : APPVersion::instance().git_tag;
         i.params["platform"]             = APPVersion::instance().getPlatform();
+        i.params["user"]                 = "0";
     }
     nlohmann::json content(package);
     auto content_str = content.dump();
@@ -59,6 +61,8 @@ void Analytics::send() {
 
     cpr::PostCallback(
         [](const cpr::Response& r) {
+            //log response
+            brls::Logger::debug("report event response: {} {}", r.status_code, r.text);
             if (r.status_code != 204) {
                 brls::Logger::error("report event error: {} {}", r.status_code, r.error.message);
             }

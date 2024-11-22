@@ -1,5 +1,3 @@
-
-
 #include <cstdlib>
 #include <fmt/format.h>
 #include <cpr/cpr.h>

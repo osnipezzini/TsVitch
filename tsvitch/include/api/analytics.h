@@ -21,8 +21,8 @@ const std::string GA_KEY = STR(ANALYTICS_KEY);
 const std::string GA_URL = "https://www.google-analytics.com/mp/collect";
 #else
 // default Google Analytics id/key
-const std::string GA_ID  = "G-YE1PE9VDBY";
-const std::string GA_KEY = "fmMCjnX1Sam815PDdrOPQA";
+const std::string GA_ID  = "G-6BY79FFV2B";
+const std::string GA_KEY = "B2W556NeTZqiykvYWZCeQA";
 const std::string GA_URL = "https://www.google-analytics.com/mp/collect";
 #endif
 
