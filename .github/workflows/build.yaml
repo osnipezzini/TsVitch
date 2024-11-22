@@ -82,13 +82,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
 
-      - run: |
-              ls ${{ github.workspace }}
-              ls ${{ github.workspace }}/${{ needs.version.outputs.DIST_NRO }}
-              ls ${{ github.workspace }}/${{ needs.version.outputs.DIST_INTEL_DMG }}
-              ls ${{ github.workspace }}/${{ needs.version.outputs.DIST_ARM_DMG }}
-              ls ${{ github.workspace }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}
-
       - name: Upload Release
         if: github.event.inputs.release == 'true' && !cancelled()
         uses: ncipollo/release-action@v1.14.0
@@ -100,7 +93,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           artifacts: >
-            ${{ needs.version.outputs.DIST_NRO }}/${{ needs.version.outputs.DIST_NRO }}.tar.gz
+            ${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
             ${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
             ${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
             ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
