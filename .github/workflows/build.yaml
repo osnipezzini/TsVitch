@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload Release
         if: github.event.inputs.release == 'true' && !cancelled()
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.14.0
         with:
           name: tsvitch ${{  github.event.inputs.version }}
           tag: ${{  github.event.inputs.version }}
@@ -93,10 +93,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           artifacts: >
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_NRO }}.tar.gz
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_NRO }}.tar.gz
+            ${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
 
   build-switch:
     needs: [ version ]
