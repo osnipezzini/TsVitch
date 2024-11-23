@@ -2,21 +2,10 @@ name: Build tsvitch
 
 on:
   push:
-  pull_request:
+    tags:
+      - '*'
   workflow_dispatch:
     inputs:
-      ssh_darwin:
-        description: 'SSH connection to Darwin'
-        required: false
-        default: 'false'
-      ssh_ubuntu:
-        description: 'SSH connection to Ubuntu'
-        required: false
-        default: 'false'
-      arm_flatpak:
-        description: 'build flatpak (aarch64)'
-        required: false
-        default: 'false'
       universal_macos:
         description: 'build macos (universal)'
         required: false
@@ -129,10 +118,27 @@ jobs:
           makeLatest: true
           bodyFile: "CHANGELOG.md"
           artifacts: >
-            ${{ needs.version.outputs.DIST_NRO }}\tsvitch.nro
-            ${{ needs.version.outputs.DIST_INTEL_DMG }}\${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_ARM_DMG }}\${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}\${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            artifacts/${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
+            artifacts/${{ needs.version.outputs.DIST_INTEL_DMG }}\${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            artifacts/${{ needs.version.outputs.DIST_ARM_DMG }}\${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            artifacts/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}\${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          make_latest: true
+          tag_name: ${{  github.event.inputs.version }}
+          files: |
+              ${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
+              ${{ needs.version.outputs.DIST_INTEL_DMG }}\${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+              ${{ needs.version.outputs.DIST_ARM_DMG }}\${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+              ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}\${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+          draft: false
+          prerelease: false
+          body_path: "CHANGELOG.md"
 
   build-switch:
     needs: [ version ]
@@ -190,13 +196,6 @@ jobs:
           brew install create-dmg dylibbundler
           brew tap xfangfang/wiliwili
           brew install -v mpv-wiliwili
-
-      - name: SSH connection to Actions
-        uses: P3TERX/ssh2actions@v1.0.0
-        if: (github.event.inputs.ssh_darwin == 'true' && github.event.inputs.ssh_darwin  != 'false') || contains(github.event.action, 'ssh_darwin')
-        env:
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
       - name: Update gamepad mappings
         if: matrix.arch != 'Universal' || ( matrix.arch == 'Universal' && github.event.inputs.universal_macos == 'true')
