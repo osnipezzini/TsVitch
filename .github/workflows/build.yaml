@@ -82,6 +82,12 @@ jobs:
         contents: write
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          
       - name: Download Artifact
         if: github.event.inputs.release == 'true' && !cancelled()
         uses: actions/download-artifact@v4
@@ -108,7 +114,7 @@ jobs:
           ls -la ${{ github.workspace }}/${{ needs.version.outputs.DIST_ARM_DMG }}
 
       - name: Check if exist universal dmg
-        if: github.event.inputs.release == 'true' && !cancelled()
+        if: github.event.inputs.release == 'true' && !cancelled() && github.event.inputs.universal_macos == 'true'
         run: |
           ls -la ${{ github.workspace }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}
         
@@ -116,6 +122,7 @@ jobs:
         if: github.event.inputs.release == 'true' && !cancelled()
         uses: ncipollo/release-action@v1.14.0
         with:
+          allowUpdates: true
           token: "${{ secrets.GITHUB_TOKEN }}"
           name: tsvitch ${{  github.event.inputs.version }}
           tag: ${{  github.event.inputs.version }}
