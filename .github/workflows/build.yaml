@@ -2,8 +2,7 @@ name: Build tsvitch
 
 on:
   push:
-    tags:
-      - '*'
+  pull_request:
   workflow_dispatch:
     inputs:
       universal_macos:
