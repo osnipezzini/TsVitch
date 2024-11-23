@@ -77,27 +77,66 @@ jobs:
 
 
   release:
-    needs: [  build-switch, build-macos, version ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
+      needs: [build-switch, build-macos, version]
+      if: github.event.inputs.release == 'true' && !cancelled()
+      name: Release tsvitch ${{ github.event.inputs.version }}
+      runs-on: ubuntu-latest
 
-      - name: Upload Release
-        if: github.event.inputs.release == 'true' && !cancelled()
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          name: tsvitch ${{  github.event.inputs.version }}
-          tag: ${{  github.event.inputs.version }}
-          omitBodyDuringUpdate: true
-          body: This release is built by github-action.
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
-          artifacts: >
-            ${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
-            ${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
+        - name: Create GitHub Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.event.inputs.version }}
+            release_name: tsvitch ${{ github.event.inputs.version }}
+            body_path: CHANGELOG.md
+            draft: false
+            prerelease: false
+
+        - name: Upload Switch Nro
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
+            asset_name: tsvitch.nro
+            asset_content_type: application/octet-stream
+
+        - name: Upload Intel DMG
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            asset_name: ${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            asset_content_type: application/octet-stream
+
+        - name: Upload ARM DMG
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            asset_name: ${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            asset_content_type: application/octet-stream
+
+        - name: Upload Universal DMG
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            asset_name: ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            asset_content_type: application/octet-stream
   build-switch:
     needs: [ version ]
     runs-on: ubuntu-latest
