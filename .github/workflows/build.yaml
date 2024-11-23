@@ -129,10 +129,10 @@ jobs:
           makeLatest: true
           bodyFile: "CHANGELOG.md"
           artifacts: >
-            ${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
-            ${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
-            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_NRO }}\tsvitch.nro
+            ${{ needs.version.outputs.DIST_INTEL_DMG }}\${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_ARM_DMG }}\${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}\${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
 
   build-switch:
     needs: [ version ]
