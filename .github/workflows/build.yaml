@@ -87,7 +87,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          
+
       - name: Download Artifact
         if: github.event.inputs.release == 'true' && !cancelled()
         uses: actions/download-artifact@v4
@@ -101,22 +101,22 @@ jobs:
       - name: Check if exist nro
         if: github.event.inputs.release == 'true' && !cancelled()
         run: |
-          ls -la ${{ github.workspace }}/${{ needs.version.outputs.DIST_NRO }} 
+          ls -la ${{ needs.version.outputs.DIST_NRO }} 
 
       - name: Check if exist intel dmg
         if: github.event.inputs.release == 'true' && !cancelled()
         run: |
-          ls -la ${{ github.workspace }}/${{ needs.version.outputs.DIST_INTEL_DMG }}
+          ls -la ${{ needs.version.outputs.DIST_INTEL_DMG }}
       
       - name: Check if exist arm dmg
         if: github.event.inputs.release == 'true' && !cancelled()
         run: |
-          ls -la ${{ github.workspace }}/${{ needs.version.outputs.DIST_ARM_DMG }}
+          ls -la ${{ needs.version.outputs.DIST_ARM_DMG }}
 
       - name: Check if exist universal dmg
         if: github.event.inputs.release == 'true' && !cancelled() && github.event.inputs.universal_macos == 'true'
         run: |
-          ls -la ${{ github.workspace }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}
+          ls -la ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}
         
       - name: Upload Release
         if: github.event.inputs.release == 'true' && !cancelled()
@@ -129,10 +129,10 @@ jobs:
           makeLatest: true
           bodyFile: "CHANGELOG.md"
           artifacts: >
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
-            ${{ github.workspace }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_NRO }}/tsvitch.nro
+            ${{ needs.version.outputs.DIST_INTEL_DMG }}/${{ needs.version.outputs.DIST_INTEL_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_ARM_DMG }}/${{ needs.version.outputs.DIST_ARM_DMG }}.dmg
+            ${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}/${{ needs.version.outputs.DIST_UNIVERSAL_DMG }}.dmg
 
   build-switch:
     needs: [ version ]
