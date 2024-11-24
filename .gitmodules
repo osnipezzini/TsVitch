@@ -4,6 +4,7 @@
 [submodule "library/QR-Code-generator"]
 	path = library/QR-Code-generator
 	url = https://github.com/nayuki/QR-Code-generator
+	ignore = dirty
 [submodule "library/pystring"]
 	path = library/pystring
 	url = https://github.com/imageworks/pystring
