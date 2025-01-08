@@ -76,6 +76,7 @@ enum class SettingItem {
     M3U8_URL,
     TLS_VERIFY,
     UP_FILTER,
+    PIN_LOCK,
 };
 
 class APPVersion : public brls::Singleton<APPVersion> {

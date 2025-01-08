@@ -102,6 +102,9 @@
         "input": "Custom playlist",
         "hint": "http://example.com/playlist.m3u8"
       },
+      "pin":{
+        "change": "Change PIN"
+      },
     "tutorial": {
       "header": "Guide",
       "intro": "Software introduction (online video; Chinese)",

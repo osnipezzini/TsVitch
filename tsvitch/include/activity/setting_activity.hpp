@@ -37,6 +37,7 @@ private:
     BRLS_BIND(brls::BooleanCell, btnTls, "setting/network/tls");
     BRLS_BIND(brls::BooleanCell, btnProxy, "setting/network/proxy");
     BRLS_BIND(brls::InputCell, btnM3U8Input, "setting/tools/m3u8/input");
+    BRLS_BIND(brls::InputCell, btnChangePin, "setting/tools/pin/change");
     BRLS_BIND(BiliSelectorCell, selectorLang, "setting/language");
     BRLS_BIND(BiliSelectorCell, selectorTheme, "setting/ui/theme");
     BRLS_BIND(BiliSelectorCell, selectorCustomTheme, "setting/custom/theme");

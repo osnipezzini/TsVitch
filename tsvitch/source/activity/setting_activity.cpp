@@ -508,6 +508,14 @@ void SettingActivity::onContentAvailable() {
             ProgramConfig::instance().setM3U8Url(m3u8Url);
         },
         "tsvitch/setting/tools/m3u8/hint"_i18n, "tsvitch/setting/tools/m3u8/hint"_i18n, 255);
+    auto configuredPin = conf.getSettingItem(SettingItem::PIN_LOCK, std::string{"0000"});
+    btnChangePin->init(
+        "tsvitch/setting/tools/pin/change"_i18n, configuredPin,
+        [](const std::string& data) {
+            std::string configuredPin = pystring::strip(data);
+            ProgramConfig::instance().setSettingItem(SettingItem::PIN_LOCK, configuredPin);
+        },
+        "tsvitch/setting/tools/pin/change"_i18n, "tsvitch/setting/tools/pin/change"_i18n, 255);
 
 #if defined(PS4) || defined(__PSV__)
     btnHWDEC->setVisibility(brls::Visibility::GONE);

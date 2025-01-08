@@ -53,6 +53,7 @@ using namespace brls::literals;
 std::unordered_map<SettingItem, ProgramOption> ProgramConfig::SETTING_MAP = {
 
     {SettingItem::CUSTOM_UPDATE_API, {"custom_update_api", {}, {}, 0}},
+    {SettingItem::PIN_LOCK, {"pin_lock", {}, {}, 0}},
     {SettingItem::APP_LANG,
      {"app_lang",
       {
